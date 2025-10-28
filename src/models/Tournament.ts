@@ -5,6 +5,12 @@ export interface IBracketState {
   losers: string[]; // Array of match IDs
 }
 
+export interface IScheduleConfig {
+  groupAScheduleTimes?: string[]; // Array of HH:MM times for Group A matches
+  groupBScheduleTimes?: string[]; // Array of HH:MM times for Group B matches
+  scheduleDate?: Date; // Date for scheduled matches
+}
+
 export interface ITournament extends Document {
   _id: string;
   name: string;
@@ -21,6 +27,7 @@ export interface ITournament extends Document {
   consolationChampion?: string; // playerId or teamId
   groupA?: string[]; // For quick tournament round robin groups
   groupB?: string[]; // For quick tournament round robin groups
+  scheduleConfig?: IScheduleConfig; // Schedule configuration
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,6 +39,19 @@ const bracketStateSchema = new Schema<IBracketState>({
   losers: [{
     type: String
   }]
+}, { _id: false });
+
+const scheduleConfigSchema = new Schema<IScheduleConfig>({
+  groupAScheduleTimes: [{
+    type: String
+  }],
+  groupBScheduleTimes: [{
+    type: String
+  }],
+  scheduleDate: {
+    type: Date,
+    default: null
+  }
 }, { _id: false });
 
 const tournamentSchema = new Schema<ITournament>({
@@ -104,6 +124,10 @@ const tournamentSchema = new Schema<ITournament>({
   groupB: {
     type: [String],
     default: []
+  },
+  scheduleConfig: {
+    type: scheduleConfigSchema,
+    default: null
   }
 }, {
   timestamps: true

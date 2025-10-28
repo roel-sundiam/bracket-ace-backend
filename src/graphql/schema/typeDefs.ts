@@ -169,6 +169,12 @@ export const typeDefs = gql`
     losers: [String!]!
   }
 
+  type ScheduleConfig {
+    groupAScheduleTimes: [String!]
+    groupBScheduleTimes: [String!]
+    scheduleDate: Date
+  }
+
   type Tournament {
     id: ID!
     name: String!
@@ -185,6 +191,7 @@ export const typeDefs = gql`
     consolationChampion: String
     groupA: [String!]
     groupB: [String!]
+    scheduleConfig: ScheduleConfig
     createdAt: Date!
     updatedAt: Date!
   }
