@@ -189,6 +189,7 @@ export const typeDefs = gql`
     seedingCompleted: Boolean!
     winnersChampion: String
     consolationChampion: String
+    plateChampion: String
     groupA: [String!]
     groupB: [String!]
     scheduleConfig: ScheduleConfig
@@ -419,6 +420,7 @@ export const typeDefs = gql`
     generateMatches(tournamentId: String!): [Match!]!
     generateRoundRobinMatches(tournamentId: String!): [Match!]!
     recalculatePlayoffMatches(tournamentId: String!): [Match!]!
+    migrateToNewFinalsFormat(tournamentId: String!): [Match!]!
     deleteMatch(matchId: ID!): Boolean!
     resetMatch(matchId: ID!): Match!
     submitMatchResult(input: SubmitMatchResultInput!): Match!

@@ -25,6 +25,7 @@ export interface ITournament extends Document {
   seedingCompleted: boolean; // Track if manual seeding is done
   winnersChampion?: string; // playerId or teamId
   consolationChampion?: string; // playerId or teamId
+  plateChampion?: string; // playerId or teamId for plate tournament
   groupA?: string[]; // For quick tournament round robin groups
   groupB?: string[]; // For quick tournament round robin groups
   scheduleConfig?: IScheduleConfig; // Schedule configuration
@@ -114,6 +115,10 @@ const tournamentSchema = new Schema<ITournament>({
     default: null
   },
   consolationChampion: {
+    type: String,
+    default: null
+  },
+  plateChampion: {
     type: String,
     default: null
   },

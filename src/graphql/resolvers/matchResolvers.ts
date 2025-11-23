@@ -648,33 +648,94 @@ export const matchResolvers = {
         }
 
         // Generate knockout stage matches
-        // Direct finals format for all group sizes:
-        // - Championship Final: 1st Group A vs 1st Group B
-        // - 3rd Place Match: 2nd Group A vs 2nd Group B
+        // New format:
+        // - Championship Round Robin: Top 1 and 2 from each group (4 players) play round robin
+        // - Plate Final: Top 3 from each group play single elimination
 
-        // Championship Final: 1st place from each group
-        const final = new Match({
+        // Championship Round Robin: 6 matches for 4 players (1A, 2A, 1B, 2B)
+        // Match 1: 1A vs 2A
+        const champ1 = new Match({
           tournamentId,
           round: 2,
           bracketType: 'winners',
-          participant1: 'TBD', // 1st place Group A
-          participant2: 'TBD', // 1st place Group B
+          participant1: 'TBD_1A', // 1st place Group A
+          participant2: 'TBD_2A', // 2nd place Group A
           completed: false
         });
-        await final.save();
-        createdMatches.push(final);
+        await champ1.save();
+        createdMatches.push(champ1);
 
-        // 3rd Place Match: 2nd place from each group
-        const thirdPlace = new Match({
+        // Match 2: 1A vs 1B
+        const champ2 = new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1A', // 1st place Group A
+          participant2: 'TBD_1B', // 1st place Group B
+          completed: false
+        });
+        await champ2.save();
+        createdMatches.push(champ2);
+
+        // Match 3: 1A vs 2B
+        const champ3 = new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1A', // 1st place Group A
+          participant2: 'TBD_2B', // 2nd place Group B
+          completed: false
+        });
+        await champ3.save();
+        createdMatches.push(champ3);
+
+        // Match 4: 2A vs 1B
+        const champ4 = new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_2A', // 2nd place Group A
+          participant2: 'TBD_1B', // 1st place Group B
+          completed: false
+        });
+        await champ4.save();
+        createdMatches.push(champ4);
+
+        // Match 5: 2A vs 2B
+        const champ5 = new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_2A', // 2nd place Group A
+          participant2: 'TBD_2B', // 2nd place Group B
+          completed: false
+        });
+        await champ5.save();
+        createdMatches.push(champ5);
+
+        // Match 6: 1B vs 2B
+        const champ6 = new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1B', // 1st place Group B
+          participant2: 'TBD_2B', // 2nd place Group B
+          completed: false
+        });
+        await champ6.save();
+        createdMatches.push(champ6);
+
+        // Plate Final: 3rd place from each group
+        const plateFinal = new Match({
           tournamentId,
           round: 2,
           bracketType: 'losers',
-          participant1: 'TBD', // 2nd place Group A
-          participant2: 'TBD', // 2nd place Group B
+          participant1: 'TBD_3A', // 3rd place Group A
+          participant2: 'TBD_3B', // 3rd place Group B
           completed: false
         });
-        await thirdPlace.save();
-        createdMatches.push(thirdPlace);
+        await plateFinal.save();
+        createdMatches.push(plateFinal);
 
         // Update tournament status to in_progress
         await Tournament.findByIdAndUpdate(tournamentId, {
@@ -728,6 +789,117 @@ export const matchResolvers = {
         return playoffMatches;
       } catch (error) {
         throw new Error(`Failed to recalculate playoff matches: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    },
+
+    migrateToNewFinalsFormat: async (_: any, { tournamentId }: { tournamentId: string }) => {
+      try {
+        console.log('[MIGRATE] Migrating tournament to new finals format:', tournamentId);
+
+        const tournament = await Tournament.findById(tournamentId);
+        if (!tournament) {
+          throw new Error('Tournament not found');
+        }
+
+        // Delete existing round 2 matches (old format)
+        await Match.deleteMany({ tournamentId, round: 2 });
+        console.log('[MIGRATE] Deleted old round 2 matches');
+
+        // Create new championship round robin matches (6 matches)
+        const championshipMatches = [];
+
+        // Match 1: 1A vs 2A
+        championshipMatches.push(new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1A',
+          participant2: 'TBD_2A',
+          completed: false
+        }));
+
+        // Match 2: 1A vs 1B
+        championshipMatches.push(new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1A',
+          participant2: 'TBD_1B',
+          completed: false
+        }));
+
+        // Match 3: 1A vs 2B
+        championshipMatches.push(new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1A',
+          participant2: 'TBD_2B',
+          completed: false
+        }));
+
+        // Match 4: 2A vs 1B
+        championshipMatches.push(new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_2A',
+          participant2: 'TBD_1B',
+          completed: false
+        }));
+
+        // Match 5: 2A vs 2B
+        championshipMatches.push(new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_2A',
+          participant2: 'TBD_2B',
+          completed: false
+        }));
+
+        // Match 6: 1B vs 2B
+        championshipMatches.push(new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'winners',
+          participant1: 'TBD_1B',
+          participant2: 'TBD_2B',
+          completed: false
+        }));
+
+        // Plate Final: 3A vs 3B
+        const plateFinal = new Match({
+          tournamentId,
+          round: 2,
+          bracketType: 'losers',
+          participant1: 'TBD_3A',
+          participant2: 'TBD_3B',
+          completed: false
+        });
+
+        // Save all matches
+        for (const match of championshipMatches) {
+          await match.save();
+        }
+        await plateFinal.save();
+
+        console.log('[MIGRATE] Created 6 championship matches and 1 plate match');
+
+        // Now advance the playoff teams to populate the matches
+        await advancePlayoffTeams(tournamentId);
+
+        // Return all new matches
+        const newMatches = await Match.find({
+          tournamentId,
+          round: 2
+        }).sort({ createdAt: 1 });
+
+        console.log('[MIGRATE] Migration complete. Total round 2 matches:', newMatches.length);
+
+        return newMatches;
+      } catch (error) {
+        throw new Error(`Failed to migrate to new finals format: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
 
@@ -907,11 +1079,11 @@ async function calculateGroupStandings(
 
   // Sort standings with tie-breaking rules
   standings.sort((a, b) => {
-    // 1. Primary: Most games won
-    if (b.gamesWon !== a.gamesWon) return b.gamesWon - a.gamesWon;
-
-    // 2. Secondary: Most match wins
+    // 1. Primary: Most match wins
     if (b.wins !== a.wins) return b.wins - a.wins;
+
+    // 2. Secondary: Most games won
+    if (b.gamesWon !== a.gamesWon) return b.gamesWon - a.gamesWon;
 
     // 3. Tertiary: Head-to-head record (only for 2-team ties)
     const teamsWithSameStats = standings.filter(s =>
@@ -990,68 +1162,148 @@ async function advancePlayoffTeams(tournamentId: string) {
   console.log('[PLAYOFF ADVANCEMENT] Group A standings:', groupAStandings);
   console.log('[PLAYOFF ADVANCEMENT] Group B standings:', groupBStandings);
 
-  // Get top 2 from each group
+  // Get top 3 from each group
   const groupA1st = groupAStandings[0]?.teamId;
   const groupA2nd = groupAStandings[1]?.teamId;
+  const groupA3rd = groupAStandings[2]?.teamId;
   const groupB1st = groupBStandings[0]?.teamId;
   const groupB2nd = groupBStandings[1]?.teamId;
+  const groupB3rd = groupBStandings[2]?.teamId;
 
   console.log('[PLAYOFF ADVANCEMENT] Advancing teams:', {
-    finals: `${groupA1st} vs ${groupB1st}`,
-    thirdPlace: `${groupA2nd} vs ${groupB2nd}`
+    championship: `1A: ${groupA1st}, 2A: ${groupA2nd}, 1B: ${groupB1st}, 2B: ${groupB2nd}`,
+    plate: `3A: ${groupA3rd} vs 3B: ${groupB3rd}`
   });
 
-  // Find or create Finals match (round 2, bracketType 'winners')
-  let finalsMatch = await Match.findOne({
+  // Get all championship round robin matches (round 2, bracketType 'winners')
+  const championshipMatches = await Match.find({
     tournamentId,
     round: 2,
     bracketType: 'winners'
-  });
+  }).sort({ createdAt: 1 }); // Sort by creation order
 
-  if (!finalsMatch && groupA1st && groupB1st) {
-    // Create Finals match if it doesn't exist
-    finalsMatch = new Match({
-      tournamentId,
-      round: 2,
-      bracketType: 'winners',
-      participant1: groupA1st,
-      participant2: groupB1st,
-      completed: false
-    });
-    await finalsMatch.save();
-    console.log('[PLAYOFF ADVANCEMENT] Created Finals match');
-  } else if (finalsMatch && groupA1st && groupB1st) {
-    finalsMatch.participant1 = groupA1st;
-    finalsMatch.participant2 = groupB1st;
-    await finalsMatch.save();
-    console.log('[PLAYOFF ADVANCEMENT] Updated Finals match');
+  // Update each championship match with the appropriate teams
+  if (championshipMatches.length >= 6 && groupA1st && groupA2nd && groupB1st && groupB2nd) {
+    // Match 1: 1A vs 2A
+    if (championshipMatches[0]) {
+      championshipMatches[0].participant1 = groupA1st;
+      championshipMatches[0].participant2 = groupA2nd;
+      await championshipMatches[0].save();
+    }
+
+    // Match 2: 1A vs 1B
+    if (championshipMatches[1]) {
+      championshipMatches[1].participant1 = groupA1st;
+      championshipMatches[1].participant2 = groupB1st;
+      await championshipMatches[1].save();
+    }
+
+    // Match 3: 1A vs 2B
+    if (championshipMatches[2]) {
+      championshipMatches[2].participant1 = groupA1st;
+      championshipMatches[2].participant2 = groupB2nd;
+      await championshipMatches[2].save();
+    }
+
+    // Match 4: 2A vs 1B
+    if (championshipMatches[3]) {
+      championshipMatches[3].participant1 = groupA2nd;
+      championshipMatches[3].participant2 = groupB1st;
+      await championshipMatches[3].save();
+    }
+
+    // Match 5: 2A vs 2B
+    if (championshipMatches[4]) {
+      championshipMatches[4].participant1 = groupA2nd;
+      championshipMatches[4].participant2 = groupB2nd;
+      await championshipMatches[4].save();
+    }
+
+    // Match 6: 1B vs 2B
+    if (championshipMatches[5]) {
+      championshipMatches[5].participant1 = groupB1st;
+      championshipMatches[5].participant2 = groupB2nd;
+      await championshipMatches[5].save();
+    }
+
+    console.log('[PLAYOFF ADVANCEMENT] Updated 6 championship round robin matches');
   }
 
-  // Find or create 3rd Place match (round 2, bracketType 'losers')
-  let thirdPlaceMatch = await Match.findOne({
+  // Update plate final match (round 2, bracketType 'losers')
+  let plateFinalMatch = await Match.findOne({
     tournamentId,
     round: 2,
     bracketType: 'losers'
   });
 
-  if (!thirdPlaceMatch && groupA2nd && groupB2nd) {
-    // Create 3rd Place match if it doesn't exist
-    thirdPlaceMatch = new Match({
-      tournamentId,
-      round: 2,
-      bracketType: 'losers',
-      participant1: groupA2nd,
-      participant2: groupB2nd,
-      completed: false
-    });
-    await thirdPlaceMatch.save();
-    console.log('[PLAYOFF ADVANCEMENT] Created 3rd Place match');
-  } else if (thirdPlaceMatch && groupA2nd && groupB2nd) {
-    thirdPlaceMatch.participant1 = groupA2nd;
-    thirdPlaceMatch.participant2 = groupB2nd;
-    await thirdPlaceMatch.save();
-    console.log('[PLAYOFF ADVANCEMENT] Updated 3rd Place match');
+  if (plateFinalMatch && groupA3rd && groupB3rd) {
+    plateFinalMatch.participant1 = groupA3rd;
+    plateFinalMatch.participant2 = groupB3rd;
+    await plateFinalMatch.save();
+    console.log('[PLAYOFF ADVANCEMENT] Updated Plate Final match');
   }
+}
+
+/**
+ * Calculate championship round robin standings and determine winner
+ * Called after all 6 championship matches are completed
+ */
+async function calculateChampionshipStandings(tournamentId: string) {
+  const tournament = await Tournament.findById(tournamentId);
+  if (!tournament) return;
+
+  // Get all championship round robin matches (round 2, bracketType 'winners')
+  const championshipMatches = await Match.find({
+    tournamentId,
+    round: 2,
+    bracketType: 'winners',
+    completed: true
+  });
+
+  // Check if all 6 championship matches are completed
+  if (championshipMatches.length < 6) {
+    console.log('[CHAMPIONSHIP STANDINGS] Not all championship matches completed yet');
+    return;
+  }
+
+  console.log('[CHAMPIONSHIP STANDINGS] All 6 championship matches completed. Calculating final standings...');
+
+  // Get the 4 championship participants
+  const participants = new Set<string>();
+  championshipMatches.forEach(match => {
+    participants.add(match.participant1.toString());
+    participants.add(match.participant2.toString());
+  });
+
+  const participantIds = Array.from(participants);
+
+  // Calculate standings using the same logic as group stage
+  const standings = await calculateGroupStandings(championshipMatches, participantIds);
+
+  console.log('[CHAMPIONSHIP STANDINGS] Final standings:', standings);
+
+  // Winner is rank 1
+  const champion = standings[0]?.teamId;
+  const plateMatch = await Match.findOne({
+    tournamentId,
+    round: 2,
+    bracketType: 'losers',
+    completed: true
+  });
+
+  const plateChampion = plateMatch?.winner?.toString();
+
+  // Update tournament with champions
+  await Tournament.findByIdAndUpdate(tournamentId, {
+    winnersChampion: champion,
+    plateChampion: plateChampion,
+    status: plateMatch ? 'completed' : 'in_progress'
+  });
+
+  console.log('[CHAMPIONSHIP STANDINGS] Tournament champions:', {
+    champion,
+    plateChampion
+  });
 }
 
 async function advanceWinnerToNextRound(completedMatch: any) {
@@ -1067,6 +1319,20 @@ async function advanceWinnerToNextRound(completedMatch: any) {
   if (teamsPerGroup >= 4 && round === 1) {
     console.log('[ADVANCEMENT] Round-robin tournament detected. Checking if ready for playoff advancement...');
     await advancePlayoffTeams(tournamentId);
+    return;
+  }
+
+  // For championship round robin (round 2, bracketType 'winners'), check if all matches are complete
+  if (round === 2 && bracketType === 'winners') {
+    console.log('[ADVANCEMENT] Championship round robin match completed. Checking if all championship matches are done...');
+    await calculateChampionshipStandings(tournamentId);
+    return;
+  }
+
+  // For plate final (round 2, bracketType 'losers'), update tournament status if championship is also done
+  if (round === 2 && bracketType === 'losers') {
+    console.log('[ADVANCEMENT] Plate final completed. Checking tournament completion...');
+    await calculateChampionshipStandings(tournamentId);
     return;
   }
 
